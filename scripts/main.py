@@ -274,6 +274,7 @@ def parse_arguments():
     parser.add_argument('--speak', action='store_true', help='Enable Speak Mode')
     parser.add_argument('--debug', action='store_true', help='Enable Debug Mode')
     parser.add_argument('--gpt3only', action='store_true', help='Enable GPT3.5 Only Mode')
+    parser.add_argument('--language', type=str, help='Set Language')
     args = parser.parse_args()
 
     if args.continuous:
@@ -291,6 +292,11 @@ def parse_arguments():
     if args.gpt3only:
         print_to_console("GPT3.5 Only Mode: ", Fore.GREEN, "ENABLED")
         cfg.set_smart_llm_model(cfg.fast_llm_model)
+    
+    if args.language:
+        print_to_console("Language set to: ", Fore.MAGENTA, args.language)
+        cfg.set_language(args.language)
+    
 
 
 
@@ -318,6 +324,8 @@ print('Using memory of type: ' + memory.__class__.__name__)
 while True:
     # Send message to AI, get response
     with Spinner("Thinking... "):
+        if cfg.language:
+            prompt = f"Always Answer in {cfg.language}\n{prompt}"
         assistant_reply = chat.chat_with_ai(
             prompt,
             user_input,

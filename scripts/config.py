@@ -97,6 +97,9 @@ class Config(metaclass=Singleton):
         """Set the smart LLM model value."""
         self.smart_llm_model = value
 
+    def set_language(self, value: str):
+        self.language = value
+        
     def set_fast_token_limit(self, value: int):
         """Set the fast token limit value."""
         self.fast_token_limit = value
