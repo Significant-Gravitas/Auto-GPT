@@ -1,4 +1,10 @@
 """Google search command for Autogpt."""
+
+import re
+import html
+from urllib import parse
+import requests
+
 from __future__ import annotations
 
 import json
@@ -6,6 +12,7 @@ import json
 from duckduckgo_search import ddg
 
 from autogpt.config import Config
+
 
 CFG = Config()
 
@@ -24,6 +31,11 @@ def google_search(query: str, num_results: int = 8) -> str:
     if not query:
         return json.dumps(search_results)
 
+    search_language_code = CFG.search_language_code
+    # transalate query str if language_code != en
+    if search_language_code != 'en':
+        query = translate(query, search_language_code)
+
     results = ddg(query, max_results=num_results)
     if not results:
         return json.dumps(search_results)
@@ -32,6 +44,23 @@ def google_search(query: str, num_results: int = 8) -> str:
         search_results.append(j)
 
     return json.dumps(search_results, ensure_ascii=False, indent=4)
+
+
+GOOGLE_TRANSLATE_URL = 'http://translate.google.com/m?q=%s&tl=%s&sl=%s'
+
+
+def translate(query, language_code):
+
+    text = parse.quote(query)
+    url = GOOGLE_TRANSLATE_URL % (text, language_code, 'en')
+    response = requests.get(url)
+    data = response.text
+    expr = r'(?s)class="(?:t0|result-container)">(.*?)<'
+    result = re.findall(expr, data)
+    if (len(result) == 0):
+        return ""
+
+    return html.unescape(result[0])
 
 
 def google_official_search(query: str, num_results: int = 8) -> str | list[str]:
@@ -52,7 +81,11 @@ def google_official_search(query: str, num_results: int = 8) -> str | list[str]:
         # Get the Google API key and Custom Search Engine ID from the config file
         api_key = CFG.google_api_key
         custom_search_engine_id = CFG.custom_search_engine_id
+        search_language_code = CFG.search_language_code
 
+        # transalate query str if language_code != en
+        if search_language_code != 'en':
+            query = translate(query, search_language_code)
         # Initialize the Custom Search API service
         service = build("customsearch", "v1", developerKey=api_key)
 
