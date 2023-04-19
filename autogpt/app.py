@@ -22,6 +22,7 @@ from autogpt.commands.git_operations import clone_repository
 from autogpt.commands.google_search import google_official_search, google_search
 from autogpt.commands.image_gen import generate_image
 from autogpt.commands.improve_code import improve_code
+from autogpt.commands.times import wait_seconds
 from autogpt.commands.twitter import send_tweet
 from autogpt.commands.web_requests import scrape_links, scrape_text
 from autogpt.commands.web_selenium import browse_website
@@ -215,6 +216,8 @@ def execute_command(command_name: str, arguments):
             return send_tweet(arguments["text"])
         elif command_name == "do_nothing":
             return "No action performed."
+        elif command_name == "wait_seconds":
+            return wait_seconds(arguments["seconds"])
         elif command_name == "task_complete":
             shutdown()
         else:
