@@ -3,6 +3,7 @@ from typing import Dict, Generator, Optional
 
 import spacy
 from selenium.webdriver.remote.webdriver import WebDriver
+from langchain.schema import HumanMessage
 
 from autogpt import token_counter
 from autogpt.config import Config
@@ -166,9 +167,8 @@ def create_message(chunk: str, question: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: The message to send to the chat completion
     """
-    return {
-        "role": "user",
-        "content": f'"""{chunk}""" Using the above text, answer the following'
+    return HumanMessage(content=
+        f'"""{chunk}""" Using the above text, answer the following'
         f' question: "{question}" -- if the question cannot be answered using the text,'
-        " summarize the text.",
-    }
+        " summarize the text."
+    )
