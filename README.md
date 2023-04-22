@@ -110,9 +110,10 @@ Note: If you don't have Git, you can just download the [latest stable release](h
 
 4. Install the required dependencies.
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+```
+curl -sSL https://install.python-poetry.org | python3 -
+poetry install
+```
 
 5. Configure Auto-GPT:
    1. Find the file named `.env.template` in the main /Auto-GPT folder. This file may be hidden by default in some operating systems due to the dot prefix. To reveal hidden files, follow the instructions for your specific operating system (e.g., in Windows, click on the "View" tab in File Explorer and check the "Hidden items" box; in macOS, press Cmd + Shift + .).
@@ -170,7 +171,7 @@ Activity and error logs are located in the `./output/logs`
 To print out debug logs:
 
 ```
-python -m autogpt --debug
+poetry run python -m autogpt --debug
 ```
 
 ### Docker
@@ -228,8 +229,8 @@ In the `.env` file set:
 
 Enter this command to use TTS _(Text-to-Speech)_ for Auto-GPT
 
-```bash
-python -m autogpt --speak
+```
+poetry run python -m autogpt --speak
 ```
 
 ### List of IDs with names from eleven labs. You can use the name or ID:

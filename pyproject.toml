@@ -4,6 +4,49 @@ version = "0.1.0"
 description = "A GPT based ai agent"
 readme = "README.md"
 
+[tool.poetry]
+name = "Auto-GPT"
+version = "0.1.0"
+description = ""
+authors = ["Torantulino"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+pinecone-client = "*"
+beautifulsoup4 = "*"
+colorama = "*"
+openai = "*"
+playsound = "1.2.2"
+python-dotenv = "*"
+PyYAML = "*"
+readability-lxml = "*"
+requests = "*"
+tiktoken = "*"
+gTTS = "*"
+docker = "*"
+duckduckgo-search = "*"
+google-api-python-client = "*"
+orjson = "*"
+Pillow = "*"
+numpy = "*"
+selenium = "*"
+webdriver_manager = "*"
+pymilvus = "*"
+redis = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+coverage = "*"
+flake8 = "*"
+pre-commit = "*"
+black = "*"
+sourcery = "*"
+isort = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
 line-length = 88
 target-version = ['py310']
