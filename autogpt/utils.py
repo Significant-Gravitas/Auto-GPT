@@ -4,15 +4,31 @@ import requests
 import yaml
 from colorama import Fore
 from git.repo import Repo
-
-# Use readline if available (for clean_input)
-try:
-    import readline
-except:
-    pass
-
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit import HTML
+from typing import Union
 from autogpt.config import Config
 
+ANSI_BLACK = "ansiblack"
+ANSI_RED = "ansired"
+ANSI_GREEN = "ansigreen"
+ANSI_YELLOW = "ansiyellow"
+ANSI_BLUE = "ansiblue"
+ANSI_MAGENTA = "ansimagenta"
+ANSI_CYAN = "ansicyan"
+ANSI_GRAY = "ansigray"
+ANSI_BRIGHTBLACK = "ansibrightblack"
+ANSI_BRIGHTRED = "ansibrightred"
+ANSI_BRIGHTGREEN = "ansibrightgreen"
+ANSI_BRIGHTYELLOW = "ansibrightyellow"
+ANSI_BRIGHTBLUE = "ansibrightblue"
+ANSI_BRIGHTMAGENTA = "ansibrightmagenta"
+ANSI_BRIGHTCYAN = "ansibrightcyan"
+ANSI_WHITE = "ansiwhite"
+
+session = PromptSession(history=InMemoryHistory())
 
 def send_chat_message_to_user(report: str):
     cfg = Config()
@@ -25,8 +41,7 @@ def send_chat_message_to_user(report: str):
             continue
         plugin.report(report)
 
-
-def clean_input(prompt: str = "", talk=False):
+def clean_input(prompt: Union[str, FormattedText] = "", color: str = None, talk=False):
     try:
         cfg = Config()
         if cfg.chat_messages_enabled:
@@ -59,12 +74,16 @@ def clean_input(prompt: str = "", talk=False):
 
         # ask for input, default when just pressing Enter is y
         print("Asking user via keyboard...")
-        answer = input(prompt)
-        return answer
+        if color:
+            prompt = HTML(f"<{color}>{prompt}</{color}>")
+        user_input = session.prompt(prompt)
+        return user_input.strip()
     except KeyboardInterrupt:
         print("You interrupted Auto-GPT")
         print("Quitting...")
         exit(0)
+    except EOFError:
+        return ""
 
 
 def validate_yaml_file(file: str):

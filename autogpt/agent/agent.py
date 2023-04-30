@@ -8,7 +8,7 @@ from autogpt.llm import chat_with_ai, create_chat_completion, create_chat_messag
 from autogpt.logs import logger, print_assistant_thoughts
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
-from autogpt.utils import clean_input, send_chat_message_to_user
+from autogpt.utils import clean_input, send_chat_message_to_user, ANSI_MAGENTA
 from autogpt.workspace import Workspace
 
 
@@ -149,9 +149,7 @@ class Agent:
                     if cfg.chat_messages_enabled:
                         console_input = clean_input("Waiting for your response...")
                     else:
-                        console_input = clean_input(
-                            Fore.MAGENTA + "Input:" + Style.RESET_ALL
-                        )
+                        console_input = clean_input("Input:", ANSI_MAGENTA)
                     if console_input.lower().strip() == cfg.authorise_key:
                         user_input = "GENERATE NEXT COMMAND JSON"
                         break
