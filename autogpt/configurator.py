@@ -1,4 +1,5 @@
 """Configurator module."""
+import os
 import click
 from colorama import Back, Fore, Style
 
@@ -11,11 +12,12 @@ CFG = Config()
 
 
 def create_config(
-    continuous: bool,
+    continuous_mode: bool,
     continuous_limit: int,
     ai_settings_file: str,
+    project_dir: str,
     skip_reprompt: bool,
-    speak: bool,
+    speak_mode: bool,
     debug: bool,
     gpt3only: bool,
     gpt4only: bool,
@@ -23,15 +25,16 @@ def create_config(
     browser_name: str,
     allow_downloads: bool,
     skip_news: bool,
-) -> None:
+) -> Config:
     """Updates the config object with the given arguments.
 
     Args:
         continuous (bool): Whether to run in continuous mode
         continuous_limit (int): The number of times to run in continuous mode
         ai_settings_file (str): The path to the ai_settings.yaml file
+        project_dir: (str) the path to the project structure
         skip_reprompt (bool): Whether to skip the re-prompting messages at the beginning of the script
-        speak (bool): Whether to enable speak mode
+        speak_mode (bool): Whether to enable speak mode
         debug (bool): Whether to enable debug mode
         gpt3only (bool): Whether to enable GPT3.5 only mode
         gpt4only (bool): Whether to enable GPT4 only mode
@@ -48,7 +51,7 @@ def create_config(
         logger.typewriter_log("Debug Mode: ", Fore.GREEN, "ENABLED")
         CFG.set_debug_mode(True)
 
-    if continuous:
+    if continuous_mode:
         logger.typewriter_log("Continuous Mode: ", Fore.RED, "ENABLED")
         logger.typewriter_log(
             "WARNING: ",
@@ -66,10 +69,10 @@ def create_config(
             CFG.set_continuous_limit(continuous_limit)
 
     # Check if continuous limit is used without continuous mode
-    if continuous_limit and not continuous:
+    if continuous_limit and not continuous_mode:
         raise click.UsageError("--continuous-limit can only be used with --continuous")
 
-    if speak:
+    if speak_mode:
         logger.typewriter_log("Speak Mode: ", Fore.GREEN, "ENABLED")
         CFG.set_speak_mode(True)
 
@@ -97,6 +100,31 @@ def create_config(
     if skip_reprompt:
         logger.typewriter_log("Skip Re-prompt: ", Fore.GREEN, "ENABLED")
         CFG.skip_reprompt = True
+
+
+    if project_dir == '' and CFG.project_dir == '' : 
+        logger.typewriter_log("ERROR : ", Fore.RED, "set PROJECT_DIR in your .env file")
+        additionalText = (
+                "Check if `PROJECT_DIR` is set in your .env file"
+                "Read https://github.com/Torantulino/Auto-GPT#readme to "
+                "double check. You can also create a github issue or join the discord"
+                " and ask there !"
+            )
+        logger.double_check(additionalText=additionalText)
+        exit(1)
+    else :
+        error_text = f" `PROJECT_DIR` folder {os.path.abspath(project_dir)} can't be found"
+        if project_dir != '' and os.path.exists(project_dir) :
+            CFG.project_dir = project_dir
+        elif project_dir != '' :
+            logger.typewriter_log("ERROR : ", Fore.RED, error_text)
+            logger.double_check("ERROR " + error_text)
+            exit(1)
+        elif not os.path.exists(CFG.project_dir) : # @NOTE sorry for code repetition but found it the best solution
+            logger.typewriter_log("ERROR : ", Fore.RED, error_text)
+            logger.double_check("ERROR " + error_text)
+            exit(1)
+
 
     if ai_settings_file:
         file = ai_settings_file
@@ -132,3 +160,6 @@ def create_config(
 
     if skip_news:
         CFG.skip_news = True
+
+    return CFG
+

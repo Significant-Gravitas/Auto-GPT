@@ -94,7 +94,7 @@ def call_ai_function(
     args = [str(arg) if arg is not None else "None" for arg in args]
     # parse args to comma separated string
     args: str = ", ".join(args)
-    messages: List[Message] = [
+    messages: list[Message] = [
         {
             "role": "system",
             "content": f"You are now the following python function: ```# {description}"

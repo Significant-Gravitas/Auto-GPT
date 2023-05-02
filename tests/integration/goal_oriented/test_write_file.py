@@ -1,10 +1,11 @@
 import pytest
+import vcr
 
 from autogpt.agent import Agent
 from autogpt.commands.file_operations import read_file
 from tests.integration.agent_utils import run_interaction_loop
 from tests.utils import requires_api_key
-
+from autogpt.prompts.prompt import construct_full_prompt
 
 @requires_api_key("OPENAI_API_KEY")
 @pytest.mark.vcr

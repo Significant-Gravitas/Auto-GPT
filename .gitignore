@@ -1,4 +1,6 @@
 ## Original ignores
+individual_commits
+split_commits.py
 autogpt/keys.py
 autogpt/*json
 autogpt/node_modules/
@@ -10,8 +12,10 @@ auto_gpt_workspace/*
 *.mpeg
 .env
 azure.yaml
+agent_settings.yaml
 ai_settings.yaml
 last_run_ai_settings.yaml
+last_run_agent_settings.yaml
 .vscode
 .idea/*
 auto-gpt.json
@@ -163,3 +167,9 @@ openai/
 
 # news
 CURRENT_BULLETIN.md
+
+#PROJECT - AUTOGPT
+/autogpt/projects/*/settings.yaml
+test_click.py
+.gitignore
+

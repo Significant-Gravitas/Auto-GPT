@@ -8,7 +8,7 @@ from autogpt.config import Config
 
 @pytest.fixture
 def agent():
-    ai_name = "Test AI"
+    agent_name = "Test AI"
     memory = MagicMock()
     full_message_history = []
     next_action_count = 0
@@ -19,7 +19,7 @@ def agent():
     workspace_directory = "workspace_directory"
 
     agent = Agent(
-        ai_name,
+        agent_name,
         memory,
         full_message_history,
         next_action_count,
@@ -33,7 +33,7 @@ def agent():
 
 
 def test_agent_initialization(agent):
-    assert agent.ai_name == "Test AI"
+    assert agent.agent_name == "Test AI"
     assert agent.memory == agent.memory
     assert agent.full_message_history == []
     assert agent.next_action_count == 0

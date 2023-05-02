@@ -12,7 +12,7 @@ from autogpt.configurator import create_config
 from autogpt.logs import logger
 from autogpt.memory import get_memory
 from autogpt.plugins import scan_plugins
-from autogpt.prompts.prompt import DEFAULT_TRIGGERING_PROMPT, construct_main_ai_config
+from autogpt.prompts.prompt import DEFAULT_TRIGGERING_PROMPT, construct_main_project, construct_full_prompt
 from autogpt.utils import (
     get_current_git_branch,
     get_latest_bulletin,
@@ -23,11 +23,12 @@ from scripts.install_plugin_deps import install_plugin_dependencies
 
 
 def run_auto_gpt(
-    continuous: bool,
+    continuous_mode: bool,
     continuous_limit: int,
-    ai_settings: str,
+    ai_settings_file: str,
+    project_dir: str,
     skip_reprompt: bool,
-    speak: bool,
+    speak_mode: bool,
     debug: bool,
     gpt3only: bool,
     gpt4only: bool,
@@ -40,24 +41,25 @@ def run_auto_gpt(
 ):
     # Configure logging before we do anything else.
     logger.set_level(logging.DEBUG if debug else logging.INFO)
-    logger.speak_mode = speak
+    logger.speak_mode = speak_mode
 
     cfg = Config()
     # TODO: fill in llm values here
     check_openai_api_key()
     create_config(
-        continuous,
-        continuous_limit,
-        ai_settings,
-        skip_reprompt,
-        speak,
-        debug,
-        gpt3only,
-        gpt4only,
-        memory_type,
-        browser_name,
-        allow_downloads,
-        skip_news,
+        continuous_mode ,
+        continuous_limit ,
+        ai_settings_file ,
+        project_dir ,
+        skip_reprompt ,
+        speak_mode ,
+        debug ,
+        gpt3only ,
+        gpt4only ,
+        memory_type ,
+        browser_name ,
+        allow_downloads ,
+        skip_news ,
     )
 
     if not cfg.skip_news:
@@ -131,9 +133,9 @@ def run_auto_gpt(
     command_registry.import_commands("autogpt.commands.write_tests")
     command_registry.import_commands("autogpt.app")
 
-    ai_name = ""
-    ai_config = construct_main_ai_config()
-    ai_config.command_registry = command_registry
+    project_name = ""
+    project_config = construct_main_project()
+    project_config.command_registry = command_registry
     # print(prompt)
     # Initialize variables
     full_message_history = []
@@ -153,17 +155,17 @@ def run_auto_gpt(
         "Using memory of type:", Fore.GREEN, f"{memory.__class__.__name__}"
     )
     logger.typewriter_log("Using Browser:", Fore.GREEN, cfg.selenium_web_browser)
-    system_prompt = ai_config.construct_full_prompt()
+    system_prompt = construct_full_prompt(project_config)
     if cfg.debug_mode:
         logger.typewriter_log("Prompt:", Fore.GREEN, system_prompt)
 
     agent = Agent(
-        ai_name=ai_name,
+        agent_name=project_name,
         memory=memory,
         full_message_history=full_message_history,
         next_action_count=next_action_count,
         command_registry=command_registry,
-        config=ai_config,
+        config=project_config,
         system_prompt=system_prompt,
         triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
         workspace_directory=workspace_directory,
