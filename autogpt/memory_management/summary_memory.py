@@ -6,6 +6,7 @@ from autogpt.agent import Agent
 from autogpt.config import Config
 from autogpt.llm.llm_utils import create_chat_completion
 from autogpt.log_cycle.log_cycle import PROMPT_SUMMARY_FILE_NAME, SUMMARY_FILE_NAME
+from autogpt.logs import logger
 
 cfg = Config()
 
@@ -29,9 +30,7 @@ def get_newly_trimmed_messages(
         int: The new index value for use in the next loop.
     """
     # Select messages in full_message_history with an index higher than last_memory_index
-    new_messages = [
-        msg for i, msg in enumerate(full_message_history) if i > last_memory_index
-    ]
+    new_messages = full_message_history[-(len(full_message_history)-last_memory_index):]
 
     # Remove messages that are already present in current_context
     new_messages_not_in_context = [
@@ -69,23 +68,25 @@ def update_running_summary(
     # Create a copy of the new_events list to prevent modifying the original list
     new_events = copy.deepcopy(new_events)
 
+    new_events = [event for event in new_events if event["role"].lower() != "user"]
     # Replace "assistant" with "you". This produces much better first person past tense results.
-    for event in new_events:
+    for i, event in enumerate(new_events):
         if event["role"].lower() == "assistant":
-            event["role"] = "you"
+            new_events[i]["role"] = "you"
 
             # Remove "thoughts" dictionary from "content"
-            content_dict = json.loads(event["content"])
-            if "thoughts" in content_dict:
-                del content_dict["thoughts"]
-            event["content"] = json.dumps(content_dict)
-
+            #TODO: Need a double check here to confirm '"thoughts":' is the correct identifier.
+            if '"thoughts":' in event["content"]:
+                try:
+                    content_dict = json.loads(event["content"])
+                    del content_dict["thoughts"]
+                    new_events[i]["content"] = json.dumps(content_dict)
+                except:
+                    error_str = f"ERROR: invalid json format when attempting to remove 'thoughts' content from event: {event}"
+                    logger.error(error_str)
+                    continue
         elif event["role"].lower() == "system":
-            event["role"] = "your computer"
-
-        # Delete all user messages
-        elif event["role"] == "user":
-            new_events.remove(event)
+            new_events[i]["role"] = "your computer"  
 
     # This can happen at any point during execution, not just the beginning
     if len(new_events) == 0:
