@@ -210,8 +210,8 @@ def scan_plugins(cfg: Config, debug: bool = False) -> List[AutoGPTPluginTemplate
     # Generic plugins
     plugins_path_path = Path(cfg.plugins_dir)
 
-    logger.debug(f"Allowlisted Plugins: {cfg.plugins_allowlist}")
-    logger.debug(f"Denylisted Plugins: {cfg.plugins_denylist}")
+    logger.debug(f"Allowlisted Plugins: {cfg.plugins_allowed}")
+    logger.debug(f"Denylisted Plugins: {cfg.plugins_denied}")
 
     for plugin in plugins_path_path.glob("*.zip"):
         if moduleList := inspect_zip_for_modules(str(plugin), debug):
@@ -229,7 +229,7 @@ def scan_plugins(cfg: Config, debug: bool = False) -> List[AutoGPTPluginTemplate
                     if (
                         "_abc_impl" in a_keys
                         and a_module.__name__ != "AutoGPTPluginTemplate"
-                        and denylist_allowlist_check(a_module.__name__, cfg)
+                        and check_allowed(a_module.__name__, cfg)
                     ):
                         loaded_plugins.append(a_module())
     # OpenAI plugins
@@ -240,7 +240,7 @@ def scan_plugins(cfg: Config, debug: bool = False) -> List[AutoGPTPluginTemplate
                 manifests_specs, cfg, debug
             )
             for url, openai_plugin_meta in manifests_specs_clients.items():
-                if denylist_allowlist_check(url, cfg):
+                if check_allowed(url, cfg):
                     plugin = BaseOpenAIPlugin(openai_plugin_meta)
                     loaded_plugins.append(plugin)
 
@@ -251,8 +251,8 @@ def scan_plugins(cfg: Config, debug: bool = False) -> List[AutoGPTPluginTemplate
     return loaded_plugins
 
 
-def denylist_allowlist_check(plugin_name: str, cfg: Config) -> bool:
-    """Check if the plugin is in the allowlist or denylist.
+def check_allowed(plugin_name: str, cfg: Config) -> bool:
+    """Check if the plugin is allowed or denied.
 
     Args:
         plugin_name (str): Name of the plugin.
@@ -263,17 +263,17 @@ def denylist_allowlist_check(plugin_name: str, cfg: Config) -> bool:
     """
     logger.debug(f"Checking if plugin {plugin_name} should be loaded")
     if (
-        plugin_name in cfg.plugins_denylist
-        or "all" in cfg.plugins_denylist
-        or "none" in cfg.plugins_allowlist
+        plugin_name in cfg.plugins_denied
+        or "all" in cfg.plugins_denied
+        or "none" in cfg.plugins_allowed
     ):
-        logger.debug(f"Not loading plugin {plugin_name} as it was in the denylist.")
+        logger.debug(f"Not loading plugin {plugin_name} as it was in the denied list.")
         return False
-    if plugin_name in cfg.plugins_allowlist or "all" in cfg.plugins_allowlist:
-        logger.debug(f"Loading plugin {plugin_name} as it was in the allowlist.")
+    if plugin_name in cfg.plugins_allowed or "all" in cfg.plugins_allowed:
+        logger.debug(f"Loading plugin {plugin_name} as it was in the allowed list.")
         return True
     ack = input(
         f"WARNING: Plugin {plugin_name} found. But not in the"
-        f" allowlist... Load? ({cfg.authorise_key}/{cfg.exit_key}): "
+        f" allowed list... Load? ({cfg.authorise_key}/{cfg.exit_key}): "
     )
     return ack.lower() == cfg.authorise_key
