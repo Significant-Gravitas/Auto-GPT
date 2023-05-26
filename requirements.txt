@@ -40,6 +40,7 @@ auto-gpt-plugin-template @ git+https://github.com/Significant-Gravitas/Auto-GPT-
 mkdocs
 pymdown-extensions
 mypy
+sentry-sdk
 
 # OpenAI and Generic plugins import
 openapi-python-client==0.13.4

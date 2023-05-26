@@ -7,7 +7,9 @@ import time
 from logging import LogRecord
 from typing import Any
 
+import sentry_sdk
 from colorama import Fore, Style
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from autogpt.log_cycle.json_handler import JsonFileHandler, JsonFormatter
 from autogpt.singleton import Singleton
@@ -83,6 +85,7 @@ class Logger(metaclass=Singleton):
 
         self.speak_mode = False
         self.chat_plugins = []
+        self.initialize_sentry()
 
     def typewriter_log(
         self, title="", title_color="", content="", speak_text=False, level=logging.INFO
@@ -178,6 +181,19 @@ class Logger(metaclass=Singleton):
         this_files_dir_path = os.path.dirname(__file__)
         log_dir = os.path.join(this_files_dir_path, "../logs")
         return os.path.abspath(log_dir)
+
+    def initialize_sentry(self):
+        sentry_logging = LoggingIntegration(
+            level=logging.WARN,  # Capture warn as breadcrumbs
+            event_level=logging.ERROR,  # Send errors as events
+        )
+        sentry_sdk.init(
+            # dsn="Will be taken from environment variable SENTRY_DSN",
+            integrations=[
+                sentry_logging,
+            ],
+            traces_sample_rate=1.0,  # TODO: Tweak this
+        )
 
 
 """
