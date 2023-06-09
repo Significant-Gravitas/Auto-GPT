@@ -13,12 +13,17 @@ from autogpt.setup import CFG
 from autogpt.workspace.workspace import Workspace
 
 
-@command("execute_python_file", "Execute Python File", '"filename": "<filename>"')
-def execute_python_file(filename: str, config: Config) -> str:
+@command(
+    "execute_python_file",
+    "Execute Python File",
+    '"filename": "<filename>", "(optional) args": "<args>"',
+)
+def execute_python_file(filename: str, config: Config, args: list = []) -> str:
     """Execute a Python file in a Docker container and return the output
 
     Args:
         filename (str): The name of the file to execute
+        (optional) args (list): The arguments of the python script
 
     Returns:
         str: The output of the file
@@ -41,7 +46,7 @@ def execute_python_file(filename: str, config: Config) -> str:
 
     if we_are_running_in_a_docker_container():
         result = subprocess.run(
-            ["python", str(path)],
+            ["python", str(path)] + args,
             capture_output=True,
             encoding="utf8",
             cwd=CFG.workspace_path,
@@ -76,7 +81,7 @@ def execute_python_file(filename: str, config: Config) -> str:
                     logger.info(status)
         container = client.containers.run(
             image_name,
-            ["python", str(path.relative_to(workspace.root))],
+            ["python", str(path.relative_to(workspace.root))] + args,
             volumes={
                 config.workspace_path: {
                     "bind": "/workspace",
@@ -88,7 +93,6 @@ def execute_python_file(filename: str, config: Config) -> str:
             stdout=True,
             detach=True,
         )
-
         container.wait()
         logs = container.logs().decode("utf-8")
         container.remove()
