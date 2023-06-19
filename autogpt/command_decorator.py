@@ -17,7 +17,7 @@ def command(
 ) -> Callable[..., Any]:
     """The command decorator is used to create Command objects from ordinary functions."""
 
-    def decorator(func: Callable[..., Any]) -> Command:
+    def decorator(func: Callable[..., Any]) -> Callable:
         cmd = Command(
             name=name,
             description=description,
