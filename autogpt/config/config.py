@@ -33,6 +33,7 @@ class Config(SystemSettings):
     exit_key: str
     plain_output: bool
     disabled_command_categories: list[str]
+    wipe_workspace_on_start: bool
     shell_command_control: str
     shell_denylist: list[str]
     shell_allowlist: list[str]
@@ -128,6 +129,7 @@ class ConfigBuilder(Configurable[Config]):
         exit_key="n",
         plain_output=False,
         disabled_command_categories=[],
+        wipe_workspace_on_start=False,
         shell_command_control="denylist",
         shell_denylist=["sudo", "su"],
         shell_allowlist=[],
@@ -211,6 +213,7 @@ class ConfigBuilder(Configurable[Config]):
             "plugins_dir": os.getenv("PLUGINS_DIR"),
             "plugins_config_file": os.getenv("PLUGINS_CONFIG_FILE"),
             "chat_messages_enabled": os.getenv("CHAT_MESSAGES_ENABLED") == "True",
+            "wipe_workspace_on_start": os.getenv("WIPE_WORKSPACE_ON_START"),
         }
 
         # Converting to a list from comma-separated string
@@ -219,6 +222,19 @@ class ConfigBuilder(Configurable[Config]):
             config_dict[
                 "disabled_command_categories"
             ] = disabled_command_categories.split(",")
+
+        config_dict["wipe_workspace_on_start"] = os.getenv("WIPE_WORKSPACE_ON_START", "False") == "True"
+        if config_dict.get("wipe_workspace_on_start", False):
+            print("Removing All Files Inside auto_gpt_workspace")
+            workspace_path = "autogpt/auto_gpt_workspace"
+            if os.path.isdir(workspace_path):
+                for file_name in os.listdir(workspace_path):
+                    file_path = os.path.join(workspace_path, file_name)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                print("Workspace files wiped successfully.")
+            else:
+                print("Workspace folder does not exist.")
 
         # Converting to a list from comma-separated string
         shell_denylist = os.getenv("SHELL_DENYLIST", os.getenv("DENY_COMMANDS"))
