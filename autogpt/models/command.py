@@ -53,14 +53,6 @@ class Command:
     def generate_from_langchain_tool(
         cls, tool: BaseTool, arg_converter: Optional[Callable] = None
     ) -> "Command":
-        # Change `title` to `name` in the arg definitions
-        logger.debug(f"Tool args: {tool.args}")
-        for name, arg in tool.args.items():
-            # HACK: only for DEBUG, remove before merge
-            if not "title" in arg:
-                logger.warn("Tool arg has no title property")
-                logger.debug(f"Tool: {tool}")
-
         def wrapper(*args, **kwargs):
             # a Tool's run function doesn't take an agent as an arg, so just remove that
             agent = kwargs.pop("agent")
