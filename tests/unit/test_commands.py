@@ -8,10 +8,13 @@ from langchain.tools import ListDirectoryTool, StructuredTool
 
 from autogpt.agent import Agent
 from autogpt.app import execute_command
-from autogpt.models.command import Command
+from autogpt.models.command import Command, CommandParameter
 from autogpt.models.command_registry import CommandRegistry
 
-SIGNATURE = "(arg1: int, arg2: str) -> str"
+PARAMETERS = [
+    CommandParameter("arg1", "int", description="Argument 1", required=True),
+    CommandParameter("arg2", "str", description="Argument 2", required=False),
+]
 
 
 class TestCommand:
@@ -29,13 +32,16 @@ class TestCommand:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         assert cmd.name == "example"
         assert cmd.description == "Example command"
         assert cmd.method == self.example_command_method
-        assert cmd.signature == "(arg1: int, arg2: str) -> str"
+        assert (
+            str(cmd)
+            == "example: Example command, params: (arg1: int, arg2: Optional[str])"
+        )
 
     def test_command_call(self):
         """Test that Command(*args) calls and returns the result of method(*args)."""
@@ -44,13 +50,14 @@ class TestCommand:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature={
-                "prompt": {
-                    "type": "string",
-                    "description": "The prompt used to generate the image",
-                    "required": True,
-                },
-            },
+            parameters=[
+                CommandParameter(
+                    name="prompt",
+                    type="string",
+                    description="The prompt used to generate the image",
+                    required=True,
+                ),
+            ],
         )
         result = cmd(arg1=1, arg2="test")
         assert result == "1 - test"
@@ -61,21 +68,10 @@ class TestCommand:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
         with pytest.raises(TypeError):
             cmd(arg1="invalid", does_not_exist="test")
-
-    def test_command_custom_signature(self):
-        custom_signature = "custom_arg1: int, custom_arg2: str"
-        cmd = Command(
-            name="example",
-            description="Example command",
-            method=self.example_command_method,
-            signature=custom_signature,
-        )
-
-        assert cmd.signature == custom_signature
 
 
 class TestCommandRegistry:
@@ -90,7 +86,7 @@ class TestCommandRegistry:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         registry.register(cmd)
@@ -105,7 +101,7 @@ class TestCommandRegistry:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         registry.register(cmd)
@@ -120,7 +116,7 @@ class TestCommandRegistry:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         registry.register(cmd)
@@ -142,7 +138,7 @@ class TestCommandRegistry:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         registry.register(cmd)
@@ -164,13 +160,13 @@ class TestCommandRegistry:
             name="example",
             description="Example command",
             method=self.example_command_method,
-            signature=SIGNATURE,
+            parameters=PARAMETERS,
         )
 
         registry.register(cmd)
         command_prompt = registry.command_prompt()
 
-        assert f"(arg1: int, arg2: str)" in command_prompt
+        assert f"(arg1: int, arg2: Optional[str])" in command_prompt
 
     def test_import_mock_commands_module(self):
         """Test that the registry can import a module with mock command plugins."""
