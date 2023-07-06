@@ -54,9 +54,12 @@ class Command:
         cls, tool: BaseTool, arg_converter: Optional[Callable] = None
     ) -> "Command":
         # Change `title` to `name` in the arg definitions
-        command_args = {}
+        logger.debug(f"Tool args: {tool.args}")
         for name, arg in tool.args.items():
-            command_args[name] = {"name": arg.pop("title"), **arg}
+            # HACK: only for DEBUG, remove before merge
+            if not "title" in arg:
+                logger.warn("Tool arg has no title property")
+                logger.debug(f"Tool: {tool}")
 
         def wrapper(*args, **kwargs):
             # a Tool's run function doesn't take an agent as an arg, so just remove that
@@ -76,7 +79,19 @@ class Command:
             name=tool.name,
             description=tool.description,
             method=wrapper,
-            signature=command_args,
+            parameters=[
+                CommandParameter(
+                    name=name,
+                    type=schema.get("type"),
+                    description=schema.get("description", schema.get("title")),
+                    required=bool(
+                        tool.args_schema.__fields__[name].required
+                    )  # gives True if `field.required == pydantic.Undefined``
+                    if tool.args_schema
+                    else True,
+                )
+                for name, schema in tool.args.items()
+            ],
         )
 
         # Avoid circular import
