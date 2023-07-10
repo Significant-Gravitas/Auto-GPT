@@ -4,20 +4,19 @@ from __future__ import annotations
 import contextlib
 import os
 import re
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import yaml
 from auto_gpt_plugin_template import AutoGPTPluginTemplate
+from dotenv import dotenv_values
 from colorama import Fore
 from pydantic import Field, validator
 
 from autogpt.core.configuration.schema import Configurable, SystemSettings
 from autogpt.plugins.plugins_config import PluginsConfig
 
-AZURE_CONFIG_FILE = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
-PLUGINS_CONFIG_FILE = os.path.join(
-    os.path.dirname(__file__), "../..", "plugins_config.yaml"
-)
+REPO_ROOT = Path(__file__).parent.parent.parent
 GPT_4_MODEL = "gpt-4"
 GPT_3_MODEL = "gpt-3.5-turbo"
 
@@ -100,7 +99,7 @@ class Config(SystemSettings, arbitrary_types_allowed=True):
     # Plugin Settings #
     ###################
     plugins_dir: str = "plugins"
-    plugins_config_file: str = PLUGINS_CONFIG_FILE
+    plugins_config_file: str = str(REPO_ROOT / 'plugins_config.yaml')
     plugins_config: PluginsConfig = Field(
         default_factory=lambda: PluginsConfig(plugins={})
     )
@@ -119,7 +118,7 @@ class Config(SystemSettings, arbitrary_types_allowed=True):
     openai_api_version: Optional[str] = None
     openai_organization: Optional[str] = None
     use_azure: bool = False
-    azure_config_file: Optional[str] = AZURE_CONFIG_FILE
+    azure_config_file: Optional[str] = str(REPO_ROOT / 'azure.yaml')
     azure_model_to_deployment_id_map: Optional[Dict[str, str]] = None
     # Elevenlabs
     elevenlabs_api_key: Optional[str] = None
@@ -134,6 +133,30 @@ class Config(SystemSettings, arbitrary_types_allowed=True):
     # Stable Diffusion
     sd_webui_auth: Optional[str] = None
 
+    @classmethod
+    def from_env(cls) -> "Config":
+        def _map_env_key(key: str) -> str:
+            env_key_map = {
+                "AUTHORISE_COMMAND_KEY": "authorise_key",
+                "FAST_LLM_MODEL": "fast_llm",
+                "SMART_LLM_MODEL": "smart_llm",
+                "USE_WEB_BROWSER": "selenium_web_browser",
+                "HEADLESS_BROWSER": "selenium_headless",
+            }
+            return env_key_map[key] if key in env_key_map else key.lower()
+
+        def _postprocess_env_value(key: str, value: str):
+            postprocessor_map = {
+                "plain_output":
+
+
+        env_file = REPO_ROOT / ".env"
+        if env_file.exists():
+            env_variables = dotenv_values(str(env_file))
+            return cls(**env_variables)
+        else:
+            return cls()
+
     @validator("plugins", each_item=True)
     def validate_plugins(cls, p: AutoGPTPluginTemplate | Any):
         assert issubclass(
@@ -143,7 +166,7 @@ class Config(SystemSettings, arbitrary_types_allowed=True):
             p.__class__.__name__ != "AutoGPTPluginTemplate"
         ), f"Plugins must subclass AutoGPTPluginTemplate; {p} is a template instance"
         return p
-
+          
     def get_azure_kwargs(self, model: str) -> dict[str, str]:
         """Get the kwargs for the Azure API."""
 
