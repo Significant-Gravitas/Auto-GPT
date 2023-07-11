@@ -1,3 +1,5 @@
+import hashlib
+import os
 import re
 import sys
 
@@ -6,6 +8,20 @@ import pkg_resources
 
 def main():
     requirements_file = sys.argv[1]
+    # check hash
+    file_hash: str
+    with open(requirements_file, "rb") as f:
+        sha1obj = hashlib.sha1()
+        sha1obj.update(f.read())
+        hash = sha1obj.hexdigest()
+        if os.path.exists("hash.calc"):
+            last_hash = open("hash.calc").read()
+            if last_hash == hash:
+                print("No requirements changed")
+                sys.exit(0)
+            else:
+                os.remove("hash.calc")
+        file_hash = hash
     with open(requirements_file, "r") as f:
         required_packages = [
             line.strip().split("#")[0].strip() for line in f.readlines()
@@ -30,6 +46,8 @@ def main():
         print(", ".join(missing_packages))
         sys.exit(1)
     else:
+        with open("hash.calc", "a") as f:
+            f.write(file_hash)
         print("All packages are installed.")
 
 
