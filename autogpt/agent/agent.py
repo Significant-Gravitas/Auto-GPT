@@ -29,6 +29,17 @@ from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
 from autogpt.workspace import Workspace
 
+FEEDBACK_PROMPT = (
+    "Below is a message from an AI agent with the role of {ai_role}. "
+    "Please review the provided Thought, Reasoning, Plan, and Criticism. "
+    "If these elements accurately contribute to the successful execution "
+    "of the assumed role, respond with the letter 'Y' followed by a "
+    "space, and then explain why it is effective. If the provided "
+    "information is not suitable for achieving the role's objectives, "
+    "please provide one or more sentences addressing the issue and "
+    "suggesting a resolution. "
+)
+
 
 class Agent:
     """Agent class for interacting with Auto-GPT.
