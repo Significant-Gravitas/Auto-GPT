@@ -3,6 +3,8 @@ from typing import Optional
 
 import click
 
+import autogpt.core.cli
+
 
 @click.group(invoke_without_command=True)
 @click.option("-c", "--continuous", is_flag=True, help="Enable Continuous Mode")
@@ -134,6 +136,9 @@ def main(
             ai_role,
             ai_goal,
         )
+
+
+main.add_command(autogpt.core.cli.core)
 
 
 if __name__ == "__main__":
