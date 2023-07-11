@@ -88,6 +88,8 @@ class Config(SystemSettings, arbitrary_types_allowed=True):
     huggingface_image_model: str = "CompVis/stable-diffusion-v1-4"
     sd_webui_url: Optional[str] = "http://localhost:7860"
     image_size: int = 256
+    # Image to text
+    huggingface_image_to_text_model: str | None = "nlpconnect/vit-gpt2-image-captioning"
     # Audio to text
     audio_to_text_provider: str = "huggingface"
     huggingface_audio_to_text_model: Optional[str] = None
@@ -240,6 +242,9 @@ class ConfigBuilder(Configurable[Config]):
             "image_provider": os.getenv("IMAGE_PROVIDER"),
             "huggingface_api_token": os.getenv("HUGGINGFACE_API_TOKEN"),
             "huggingface_image_model": os.getenv("HUGGINGFACE_IMAGE_MODEL"),
+            "huggingface_image_to_text_model": os.getenv(
+                "HUGGINGFACE_IMAGE_TO_TEXT_MODEL"
+            ),
             "audio_to_text_provider": os.getenv("AUDIO_TO_TEXT_PROVIDER"),
             "huggingface_audio_to_text_model": os.getenv(
                 "HUGGINGFACE_AUDIO_TO_TEXT_MODEL"
