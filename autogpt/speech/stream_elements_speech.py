@@ -15,6 +15,10 @@ class StreamElementsSpeech(VoiceBase):
         """Setup the voices, API key, etc."""
 
     def _speech(self, text: str, voice: str, _: int = 0) -> bool:
+        voice1 = os.getenv("STREAMELEMENTS_VOICE_1") or "Brian"
+        voice2 = os.getenv("STREAMELEMENTS_VOICE_2") or "Emma"
+        voice3 = os.getenv("STREAMELEMENTS_VOICE_3") or "Amy"
+
         """Speak text using the streamelements API
 
         Args:
@@ -24,9 +28,12 @@ class StreamElementsSpeech(VoiceBase):
         Returns:
             bool: True if the request was successful, False otherwise
         """
-        tts_url = (
-            f"https://api.streamelements.com/kappa/v2/speech?voice={voice}&text={text}"
-        )
+        if voice == 2:
+            tts_url = f"https://api.streamelements.com/kappa/v2/speech?voice={voice3}&text={text}"
+        elif voice == 1:
+            tts_url = f"https://api.streamelements.com/kappa/v2/speech?voice={voice2}&text={text}"
+        else:
+            tts_url = f"https://api.streamelements.com/kappa/v2/speech?voice={voice1}&text={text}"
         response = requests.get(tts_url)
 
         if response.status_code == 200:
