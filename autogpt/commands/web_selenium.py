@@ -36,6 +36,9 @@ from autogpt.url_utils.validators import validate_url
 
 BrowserOptions = ChromeOptions | EdgeOptions | FirefoxOptions | SafariOptions
 
+import os
+from datetime import datetime
+
 FILE_DIR = Path(__file__).parent.parent
 
 
@@ -69,6 +72,11 @@ def browse_website(url: str, question: str, agent: Agent) -> str:
         # Just grab the first line.
         msg = e.msg.split("\n")[0]
         return f"Error: {msg}"
+
+    #Make a Screenshot
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    screenshot_filename = f"screenshot-{timestamp}.png"
+    save_screenshot(driver, screenshot_filename)
 
     add_header(driver)
     summary = summarize_memorize_webpage(url, text, question, agent, driver)
@@ -204,6 +212,29 @@ def add_header(driver: WebDriver) -> None:
         driver.execute_script(overlay_script)
     except Exception as e:
         print(f"Error executing overlay.js: {e}")
+
+
+def save_screenshot(driver: WebDriver, filename: str) -> None:
+    """Save a screenshot of the entire browser content
+
+    Args:
+        driver (WebDriver): The webdriver to use to take the screenshot
+        filename (str): The filename to save the screenshot
+
+    Returns:
+        None
+    """
+    # Get the dimensions of the web page
+    scroll_width = driver.execute_script("return document.body.scrollWidth;")
+    scroll_height = driver.execute_script("return document.body.scrollHeight;")
+    
+    # Resize the browser window to the dimensions of the web page
+    driver.set_window_size(scroll_width, scroll_height)
+
+    workspace_path = "auto_gpt_workspace"
+    os.makedirs(workspace_path, exist_ok=True)
+    screenshot_path = os.path.join(workspace_path, filename)
+    driver.save_screenshot(screenshot_path)
 
 
 def summarize_memorize_webpage(
