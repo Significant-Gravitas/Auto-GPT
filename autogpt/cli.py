@@ -28,6 +28,7 @@ import click
     type=int,
     help="Defines the number of times to run in continuous mode",
 )
+@click.option("--manual", is_flag=True, help="Create an AI-Assistant in Manual Mode")
 @click.option("--speak", is_flag=True, help="Enable Speak Mode")
 @click.option("--debug", is_flag=True, help="Enable Debug Mode")
 @click.option("--gpt3only", is_flag=True, help="Enable GPT3.5 Only Mode")
@@ -91,6 +92,7 @@ def main(
     ai_settings: str,
     prompt_settings: str,
     skip_reprompt: bool,
+    manual: bool,
     speak: bool,
     debug: bool,
     gpt3only: bool,
@@ -120,6 +122,7 @@ def main(
             ai_settings,
             prompt_settings,
             skip_reprompt,
+            manual,
             speak,
             debug,
             gpt3only,
