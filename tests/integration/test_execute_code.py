@@ -7,7 +7,7 @@ import tempfile
 import pytest
 
 import autogpt.commands.execute_code as sut  # system under testing
-from autogpt.agent.agent import Agent
+from autogpt.agents.agent import Agent
 from autogpt.config import Config
 
 
@@ -37,7 +37,7 @@ def test_execute_python_file(python_test_file: str, random_string: str, agent: A
 
 
 def test_execute_python_code(random_code: str, random_string: str, agent: Agent):
-    ai_name = agent.ai_name
+    ai_name = agent.ai_config.ai_name
 
     result: str = sut.execute_python_code(random_code, "test_code", agent=agent)
     assert result.replace("\r", "") == f"Hello {random_string}!\n"
@@ -65,7 +65,7 @@ def test_execute_python_code_disallows_name_arg_path_traversal(
 
 
 def test_execute_python_code_overwrites_file(random_code: str, agent: Agent):
-    ai_name = agent.ai_name
+    ai_name = agent.ai_config.ai_name
     destination = os.path.join(
         agent.config.workspace_path, ai_name, "executed_code", "test_code.py"
     )

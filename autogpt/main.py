@@ -6,7 +6,7 @@ from typing import Optional
 
 from colorama import Fore, Style
 
-from autogpt.agent import Agent
+from autogpt.agents import Agent
 from autogpt.config.config import ConfigBuilder, check_openai_api_key
 from autogpt.configurator import create_config
 from autogpt.logs import logger
@@ -167,10 +167,7 @@ def run_auto_gpt(
         goals=ai_goals,
     )
     ai_config.command_registry = command_registry
-    ai_name = ai_config.ai_name
     # print(prompt)
-    # Initialize variables
-    next_action_count = 0
 
     # add chat plugins capable of report to logger
     if config.chat_messages_enabled:
@@ -187,16 +184,10 @@ def run_auto_gpt(
         "Using memory of type:", Fore.GREEN, f"{memory.__class__.__name__}"
     )
     logger.typewriter_log("Using Browser:", Fore.GREEN, config.selenium_web_browser)
-    system_prompt = ai_config.construct_full_prompt(config)
-    if config.debug_mode:
-        logger.typewriter_log("Prompt:", Fore.GREEN, system_prompt)
 
     agent = Agent(
-        ai_name=ai_name,
         memory=memory,
-        next_action_count=next_action_count,
         command_registry=command_registry,
-        system_prompt=system_prompt,
         triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
         workspace_directory=workspace_directory,
         ai_config=ai_config,

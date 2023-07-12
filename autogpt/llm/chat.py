@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from autogpt.agent.agent import Agent
+    from autogpt.agents.agent import Agent
 
 from autogpt.config import Config
 from autogpt.llm.api_manager import ApiManager
@@ -180,7 +180,7 @@ def chat_with_ai(
         logger.debug("")
     logger.debug("----------- END OF CONTEXT ----------------")
     agent.log_cycle_handler.log_cycle(
-        agent.ai_name,
+        agent.ai_config.ai_name,
         agent.created_at,
         agent.cycle_count,
         message_sequence.raw(),

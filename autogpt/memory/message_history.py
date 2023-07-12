@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from autogpt.agent import Agent
+    from autogpt.agents import Agent, BaseAgent
 
 from autogpt.config import Config
-from autogpt.json_utils.utilities import extract_json_from_response
+from autogpt.json_utils.utilities import extract_dict_from_response
 from autogpt.llm.base import ChatSequence, Message
 from autogpt.llm.providers.openai import OPEN_AI_CHAT_MODELS
 from autogpt.llm.utils import (
@@ -17,13 +17,18 @@ from autogpt.llm.utils import (
     count_string_tokens,
     create_chat_completion,
 )
-from autogpt.logs import PROMPT_SUMMARY_FILE_NAME, SUMMARY_FILE_NAME, logger
+from autogpt.logs import (
+    PROMPT_SUMMARY_FILE_NAME,
+    SUMMARY_FILE_NAME,
+    LogCycleHandler,
+    logger,
+)
 
 
 @dataclass
 class MessageHistory(ChatSequence):
     max_summary_tlength: int = 500
-    agent: Optional[Agent] = None
+    agent: Optional[BaseAgent | Agent] = None
     summary: str = "I was created"
     last_trimmed_index: int = 0
 
@@ -98,7 +103,7 @@ Latest Development:
             result_message = messages[i + 1]
             try:
                 assert (
-                    extract_json_from_response(ai_message.content) != {}
+                    extract_dict_from_response(ai_message.content) != {}
                 ), "AI response is not a valid JSON object"
                 assert result_message.type == "action_result"
 
@@ -153,7 +158,7 @@ Latest Development:
 
                 # Remove "thoughts" dictionary from "content"
                 try:
-                    content_dict = extract_json_from_response(event.content)
+                    content_dict = extract_dict_from_response(event.content)
                     if "thoughts" in content_dict:
                         del content_dict["thoughts"]
                     event.content = json.dumps(content_dict)
@@ -212,7 +217,9 @@ Latest Development:
         )
 
         prompt = ChatSequence.for_model(config.fast_llm, [Message("user", prompt)])
-        if self.agent:
+        if self.agent is not None and isinstance(
+            getattr(self.agent, "log_cycle_handler", None), LogCycleHandler
+        ):
             self.agent.log_cycle_handler.log_cycle(
                 self.agent.ai_config.ai_name,
                 self.agent.created_at,
@@ -225,7 +232,9 @@ Latest Development:
             prompt, config, max_tokens=max_output_length
         ).content
 
-        if self.agent:
+        if self.agent is not None and isinstance(
+            getattr(self.agent, "log_cycle_handler", None), LogCycleHandler
+        ):
             self.agent.log_cycle_handler.log_cycle(
                 self.agent.ai_config.ai_name,
                 self.agent.created_at,
